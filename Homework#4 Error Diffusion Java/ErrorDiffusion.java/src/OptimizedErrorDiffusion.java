@@ -10,14 +10,14 @@ import java.util.concurrent.locks.LockSupport;
 public class OptimizedErrorDiffusion {
 
     // ===== Settings =====
-    private static final String IN_PATH    = "ORIGINAL_image/noise_10000x10000.png";
-    private static final String OUT_BASE   = "output/OptimizedErrorDiffusion/noise10000x10000/noise_10000x10000_128";
+    private static final String IN_PATH    = "ORIGINAL_image/baboon_512.png";
+    private static final String OUT_BASE   = "output/OptimizedErrorDiffusion/baboonV2/baboon_512_V2_32";
     private static final int    WARMUP_SEQ = 5;   // Sequential warm-up runs
     private static final int    NUM_RUNS   = 3;   // Measured runs (for average)
     private static final int    MAX_THREADS = Math.max(1, Runtime.getRuntime().availableProcessors()); // Max threads to test
 
     // Performance tuning
-    private static final int CHUNK = 128;  // 64–256 is often optimal
+    private static final int CHUNK = 32;  // 64–256 is often optimal
     private static final int    BACKOFF_NS  = 0;    // 0 = fastest on most machines
     private static final int    PROG_STRIDE = 16;   // Padding to prevent false-sharing (≈64B / 4)
     // ==========================
@@ -38,8 +38,11 @@ public class OptimizedErrorDiffusion {
             for (int x = 0; x < w; x++) {
                 int rgb = src.getRGB(x, y);
                 int r = (rgb >> 16) & 0xFF, gc = (rgb >> 8) & 0xFF, b = rgb & 0xFF;
-                // Round-nearest for 0.299 / 0.587 / 0.114
-                int gray = (299 * r + 587 * gc + 114 * b + 500) / 1000;
+
+                // Fixed-point (2^16) implementation of the 0.299/0.587/0.114 formula
+                // (r * 19595 + g * 38470 + b * 7471 + 32768) / 65536
+                int gray = (r * 19595 + gc * 38470 + b * 7471 + 32768) / 65536 ;
+
                 gp[k++] = (byte) gray;
             }
         }
