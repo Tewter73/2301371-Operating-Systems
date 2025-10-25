@@ -276,8 +276,8 @@ public class ParallelErrorDiffusion {
     }
 
     public static void main(String[] args) {
-        String inputPath = "original_image/10k-Image.png";
-        String baseName = "output/10k";
+        String inputPath = "original_image/world-bw.png";
+        String baseName = "output/World_tew";
         final int NUM_RUNS = 3;
 
         BufferedImage grayscaleImg = loadAndConvertToGrayscale(inputPath);
